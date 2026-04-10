@@ -75,13 +75,17 @@ loki.source.journal "journal" {
   }
 }
 
-# the NPM container logs proxy access/errors to a file and not Docker itself, so we need to read and forward those files to Loki explicitly
+# the NPM container logs proxy access/errors to a file and not Docker itself.
+# so, we need to read and forward those files to Loki explicitly and not rely on Docker logs only.
+# note:
+# Alloy adds a filename: {filename} label by default. So, you can use that too in Grafana.
+
 local.file_match "nginx_access_logs" {
+
   path_targets = [
     { 
-      # Alloy adds a filename: {filename} label by default. So, you can use that too in Grafana.
-      "__path__" = "/data/logs/all_proxy_access.log", # log file to read
-      source = "nginx", # add label 
+      "__path__" = "/data/logs/all_proxy_access.log",
+      source = "nginx",
     },
   ]
 }
