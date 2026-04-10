@@ -41,31 +41,22 @@ loki.source.journal "journal" {
   }
 }
 
+
+local.file_match "nginx_access_logs" {
+  path_targets = [
+    { "__path__" = "/data/logs/all_proxy_access.log, job = "nginx" },
+  ]
+}
+
+loki.source.file "nginx_access_logs" {
+  targets    = local.file_match.app_logs.targets
+  forward_to = [loki.write.local.receiver]
+}
+
+
+
 loki.write "local" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
-  }
-}
-
-prometheus.exporter.self "alloy" {}
-
-prometheus.scrape "alloy" {
-  targets    = prometheus.exporter.self.alloy.targets
-  forward_to = [prometheus.remote_write.default.receiver]
-}
-
-prometheus.scrape "prometheus" {
-  targets = [
-    { "__address__" = "prometheus:9090", "job" = "prometheus" },
-    { "__address__" = "grafana:3000",    "job" = "grafana" },
-    { "__address__" = "loki:3100",       "job" = "loki" },
-    { "__address__" = "tempo:3200",      "job" = "tempo" },
-  ]
-  forward_to = [prometheus.remote_write.default.receiver]
-}
-
-prometheus.remote_write "default" {
-  endpoint {
-    url = "http://prometheus:9090/api/v1/write"
   }
 }
