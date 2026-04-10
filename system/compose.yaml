@@ -17,9 +17,9 @@ services:
     #  - "host.docker.internal:host-gateway" # resolves in curl but not NPM 
           
     ports:
-      - '80:80' # Public HTTP Port
+      - '80:80'   # Public HTTP Port
       - '443:443' # Public HTTPS Port
-      - '81:81' # Admin Web Port
+      - '81:81'   # Admin Web Port
 
     healthcheck:
       test: ["CMD", "/usr/bin/check-health"]
