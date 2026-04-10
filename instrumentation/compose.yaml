@@ -1,0 +1,73 @@
+services:
+  grafana:
+    image: grafana/grafana:11.0.0
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      GF_SMTP_ENABLED: ${GF_SMTP_ENABLED:-true}
+      GF_SMTP_HOST: ${GF_SMTP_HOST:-smtp.gmail.com:587}
+      GF_SMTP_USER: ${GF_SMTP_USER:-insert email}
+      GF_SMTP_FROM_ADDRESS: ${GF_SMTP_FROM_ADDRESS:-insert email}
+      GF_SMTP_FROM_NAME: ${GF_SMTP_FROM_NAME:-Grafana}
+      GF_SMTP_PASSWORD: ${GF_SMTP_PASSWORD:-insert gmail app password}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+
+  loki:
+    image: grafana/loki:3.0.0
+    restart: unless-stopped
+    command: -config.file=/etc/loki/config.yaml
+    expose:
+      - "3100"
+    volumes:
+      - ./config/loki/config.yaml:/etc/loki/config.yaml:ro
+      - loki-data:/loki
+
+  tempo:
+    image: grafana/tempo:2.10.0
+    restart: unless-stopped
+    command: [ "-config.file=/etc/tempo/config.yaml" ]
+    expose:
+      - "3200"
+      - "4318"
+    volumes:
+      - ./config/tempo/config.yaml:/etc/tempo/config.yaml:ro
+      - tempo-data:/tmp/tempo
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    expose:
+      - "9090"
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+  alloy:
+    image: grafana/alloy:latest
+    restart: unless-stopped
+    command: run /etc/alloy/config.alloy
+    expose:
+      - "12345"
+    volumes:
+      - ./config/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/log/journal:/var/log/journal:ro
+      - /run/log/journal:/run/log/journal:ro
+
+networks:
+  default:
+    name: system-proxy
+
+volumes:
+  grafana-data:
+  loki-data:
+  tempo-data:
+  prometheus-data:
