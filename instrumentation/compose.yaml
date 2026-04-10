@@ -66,6 +66,8 @@ services:
 networks:
   default:
     name: system-proxy
+    # mark this as external outside of system/compose.yaml so that the network isn't duplicated...
+    external: true
 
 volumes:
   grafana-data:
