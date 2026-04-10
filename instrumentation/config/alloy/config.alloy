@@ -11,7 +11,8 @@
 //      - /var/log:/var/log:ro                                        # host log folder              
 //      - /var/log/journal:/var/log/journal:ro                        # host persisntent journal log file (this is actually redundant since we mounted the whole folder)
 //      - /run/log/journal:/run/log/journal:ro                        # host in-memory journal log file
-//      - logs_npm:/logs/npm:ro                                       # custom log file: ie. npm log files (npm container also mounts logs_npm, where it stores logs)
+//      # note: we use system_logs_npm instead of logs_npm since compose stack name is prepended to volume names...
+//      - system_logs_npm:/logs/npm:ro                                # custom log file: ie. npm log files (npm container also mounts logs_npm, where it stores logs).
 //      - other volume mounts for other custom log files etc...
 
 // Alloy's own internal log level
