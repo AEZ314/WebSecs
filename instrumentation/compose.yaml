@@ -62,6 +62,7 @@ services:
       - /etc/machine-id:/etc/machine-id:ro
       - /var/log/journal:/var/log/journal:ro
       - /run/log/journal:/run/log/journal:ro
+      - /data/logs:/data/logs:ro
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -73,7 +74,7 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
-      
+
 networks:
   default:
     name: system-proxy
