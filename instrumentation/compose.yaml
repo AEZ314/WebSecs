@@ -65,7 +65,7 @@ services:
       - /var/log:/var/log:ro                                        # host log folder              
       - /var/log/journal:/var/log/journal:ro                        # host persisntent journal log file (this is actually redundant since we mounted the whole folder)
       - /run/log/journal:/run/log/journal:ro                        # host in-memory journal log file
-      - /opt/dockhand/stacks/Hetzner/system/data/logs:/data/logs:ro # custom log file: ie. npm log files
+      - logs_npm:/logs/npm:ro                                       # custom log file: ie. npm log files (npm container also mounts logs_npm, where it stores logs)
 
   # Container Advisor. For container metrics.
   cadvisor:
@@ -80,7 +80,7 @@ services:
       - /var/lib/docker:/var/lib/docker:ro
 
   # node is a "server node," not to be confused with NodeJS :)
-  # it reads resource metrics from host and exposes them to Prometheus in a format that it understands.
+  # it reads host resource metrics like CPU, RAM usage and exposes them to Prometheus in a format that it understands.
   node-exporter:
     image: prom/node-exporter:latest
     restart: unless-stopped
@@ -98,6 +98,9 @@ networks:
     external: true
 
 volumes:
+  logs_npm:
+    # set true outside of the "system" stack to prevent duplication
+    external: true
   grafana-data:
   loki-data:
   tempo-data:

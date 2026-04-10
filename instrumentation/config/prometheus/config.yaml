@@ -43,7 +43,7 @@ scrape_configs:
       - targets: ["cadvisor:8080"]
 
   # node is a "server node," not to be confused with NodeJS :)
-  # it reads resource metrics from host and exposes them to Prometheus in a format that it understands.
+  # it reads host resource metrics like CPU, RAM usage and exposes them to Prometheus in a format that it understands.
   - job_name: node
     static_configs:
       - targets: ["node-exporter:9100"]
