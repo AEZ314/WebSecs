@@ -99,7 +99,7 @@ networks:
     external: true
 
 volumes:
-  logs_npm:
+  system_logs_npm:
     # set true outside of the "system" stack to prevent duplication
     external: true
   grafana-data:
