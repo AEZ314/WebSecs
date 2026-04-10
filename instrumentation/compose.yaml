@@ -1,3 +1,6 @@
+# The services defined here internally use service names to communicate with each other: ie. grafana:3000
+# Docker resolves service names to IPs only when they are in the same *user defined* bridge network.
+# So, make sure they are all in the system-proxy network or some other *user defined* network.
 services:
   grafana:
     image: grafana/grafana:11.0.0
@@ -64,6 +67,7 @@ services:
       - /run/log/journal:/run/log/journal:ro                        # host in-memory journal log file
       - /opt/dockhand/stacks/Hetzner/system/data/logs:/data/logs:ro # custom log file: ie. npm log files
 
+  # Container Advisor. For container metrics.
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     restart: unless-stopped
@@ -74,6 +78,18 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
+
+  # node is a "server node," not to be confused with NodeJS :)
+  # it reads resource metrics from host and exposes them to Prometheus in a format that it understands.
+  node-exporter:
+    image: prom/node-exporter:latest
+    restart: unless-stopped
+    expose:
+      - "9100"
+    command:
+      - --path.rootfs=/host
+    volumes:
+      - /:/host:ro,rslave
 
 networks:
   default:
