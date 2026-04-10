@@ -44,12 +44,12 @@ loki.source.journal "journal" {
 
 local.file_match "nginx_access_logs" {
   path_targets = [
-    { "__path__" = "/data/logs/all_proxy_access.log, job = "nginx" },
+    { "__path__" = "/data/logs/all_proxy_access.log", job = "nginx" },
   ]
 }
 
 loki.source.file "nginx_access_logs" {
-  targets    = local.file_match.app_logs.targets
+  targets = local.file_match.nginx_access_logs.targets
   forward_to = [loki.write.local.receiver]
 }
 
