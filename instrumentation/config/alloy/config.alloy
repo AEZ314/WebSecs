@@ -81,7 +81,7 @@ local.file_match "nginx_access_logs" {
     { 
       # Alloy adds a filename: {filename} label by default. So, you can use that too in Grafana.
       "__path__" = "/data/logs/all_proxy_access.log", # log file to read
-      source = "nginx" # add label 
+      source = "nginx", # add label 
     },
   ]
 }
