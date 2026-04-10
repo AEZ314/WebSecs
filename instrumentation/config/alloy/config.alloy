@@ -1,7 +1,33 @@
+# In this Alloy config, Alloy expects log files to read from, which we need to mount.
+# So, your compose service should look like:
+#
+#  alloy:
+#    image: grafana/alloy:latest
+#    command: run /etc/alloy/config.alloy
+#    volumes:
+#      - ./config/alloy/config.alloy:/etc/alloy/config.alloy:ro      # Alloy config file
+#      - /var/run/docker.sock:/var/run/docker.sock:ro                # Docker sock connection
+#      - /etc/machine-id:/etc/machine-id:ro                          # host machine id
+#      - /var/log:/var/log:ro                                        # host log folder              
+#      - /var/log/journal:/var/log/journal:ro                        # host persisntent journal log file (this is actually redundant since we mounted the whole folder)
+#      - /run/log/journal:/run/log/journal:ro                        # host in-memory journal log file
+#      - /opt/dockhand/stacks/Hetzner/system/data/logs:/data/logs:ro # custom log file: ie. npm log files
+
+
+# Alloy's own internal log level
 logging {
   level = "info"
 }
 
+# define where to send logs
+loki.write "local" {
+  endpoint {
+    # Docker resolves "loki" to the IP address of the loki container from the user defined bridge network
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+# ask docker to list containers
 discovery.docker "containers" {
   host = "unix:///var/run/docker.sock"
 }
@@ -9,20 +35,21 @@ discovery.docker "containers" {
 discovery.relabel "docker_logs" {
   targets = discovery.docker.containers.targets
 
+  # add label -> source: docker
   rule {
-    target_label = "job"
+    target_label = "source"
     replacement  = "docker"
   }
 
   rule {
-    source_labels = ["__meta_docker_container_name"]
+    source_labels = ["__meta_docker_container_name"] # {stack name}-{service name}-{instance number}. ie. apps-n8n-1, apps-n8n-2...
     regex         = "/(.*)"
     target_label  = "container"
     replacement   = "$1"
   }
 
   rule {
-    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"] # ie. n8n
     target_label  = "compose_service"
   }
 }
@@ -33,30 +60,33 @@ loki.source.docker "containers" {
   forward_to = [loki.write.local.receiver]
 }
 
+# loki.source.journal reads /var/log/journal and /run/log/journal. 
+# Since Alloy is containerized, we want host's journal files instead of the container's.
+# So, we fool Alloy to read host's journal instead of its own by mounting the host files as such:
+#    volumes:
+#      - /var/log/journal:/var/log/journal:ro
+#      - /run/log/journal:/run/log/journal:ro
+#      - other volume mounts...
 loki.source.journal "journal" {
-  max_age    = "24h"
+  max_age    = "24h" # system journal might be too long; start reading from the last 24hrs instead of server's day one.
   forward_to = [loki.write.local.receiver]
   labels = {
-    job = "systemd-journal",
+    source = "systemd-journal", # add label
   }
 }
 
-
+# the NPM container logs proxy access/errors to a file and not Docker itself, so we need to read and forward those files to Loki explicitly
 local.file_match "nginx_access_logs" {
   path_targets = [
-    { "__path__" = "/data/logs/all_proxy_access.log", job = "nginx" },
+    { 
+      # Alloy adds a filename: {filename} label by default. So, you can use that too in Grafana.
+      "__path__" = "/data/logs/all_proxy_access.log", # log file to read
+      source = "nginx" # add label 
+    },
   ]
 }
 
 loki.source.file "nginx_access_logs" {
   targets = local.file_match.nginx_access_logs.targets
   forward_to = [loki.write.local.receiver]
-}
-
-
-
-loki.write "local" {
-  endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
-  }
 }

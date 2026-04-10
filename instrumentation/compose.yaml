@@ -56,13 +56,13 @@ services:
     expose:
       - "12345"
     volumes:
-      - ./config/alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/log:/var/log:ro
-      - /etc/machine-id:/etc/machine-id:ro
-      - /var/log/journal:/var/log/journal:ro
-      - /run/log/journal:/run/log/journal:ro
-      - /opt/dockhand/stacks/Hetzner/system/data/logs:/data/logs:ro #npm logs
+      - ./config/alloy/config.alloy:/etc/alloy/config.alloy:ro      # Alloy config file
+      - /var/run/docker.sock:/var/run/docker.sock:ro                # Docker sock connection
+      - /etc/machine-id:/etc/machine-id:ro                          # host machine id
+      - /var/log:/var/log:ro                                        # host log folder              
+      - /var/log/journal:/var/log/journal:ro                        # host persisntent journal log file (this is actually redundant since we mounted the whole folder)
+      - /run/log/journal:/run/log/journal:ro                        # host in-memory journal log file
+      - /opt/dockhand/stacks/Hetzner/system/data/logs:/data/logs:ro # custom log file: ie. npm log files
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
