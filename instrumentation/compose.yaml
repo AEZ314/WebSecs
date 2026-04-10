@@ -62,7 +62,7 @@ services:
       - /etc/machine-id:/etc/machine-id:ro
       - /var/log/journal:/var/log/journal:ro
       - /run/log/journal:/run/log/journal:ro
-      - /data/logs:/data/logs:ro
+      - /opt/dockhand/stacks/Hetzner/system/data/logs:/data/logs:ro #npm logs
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
