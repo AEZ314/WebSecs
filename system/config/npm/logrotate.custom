@@ -1,0 +1,27 @@
+# Rotate access logs weekly and keep no history
+
+/data/logs/*_access.log /data/logs/*/access.log {
+    su npm npm
+    create 0644
+    weekly
+    rotate 0
+    missingok
+    notifempty
+    sharedscripts
+    postrotate
+    kill -USR1 `cat /run/nginx/nginx.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}
+
+/data/logs/*_error.log /data/logs/*/error.log {
+    su npm npm
+    create 0644
+    weekly
+    rotate 0
+    missingok
+    notifempty
+    sharedscripts
+    postrotate
+    kill -USR1 `cat /run/nginx/nginx.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}

@@ -35,6 +35,10 @@ services:
       # DB_SQLITE_FILE: "/data/database.sqlite"
 
     volumes:
+      # custom NGINX settings
+      - ./config/npm/custom:/data/nginx/custom
+      # custom log rotation settings
+      - ./config/npm/logrotate.custom:/etc/logrotate.d/nginx-proxy-manager
       - logs_npm:/data/logs
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
